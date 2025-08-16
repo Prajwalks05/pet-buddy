@@ -9,6 +9,7 @@ CREATE TABLE users (
 );
 
 
+
 ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user';
 ALTER TABLE users ADD COLUMN shelter_id UUID REFERENCES shelters(id);
 
