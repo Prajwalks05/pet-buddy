@@ -8,6 +8,8 @@ A comprehensive full-stack web application connecting animal shelters with poten
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
 
+- **Live Demo**: https://loomio-project.vercel.app/
+
 ## 🌟 Features
 
 ### 🔐 **Role-Based Authentication**
@@ -250,15 +252,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **React Community** - For the amazing ecosystem
 - **Animal Shelters** - For their dedication to animal welfare
 
-## 📞 Support
 
-For support, email support@loomio.com or join our Slack channel.
 
 ## 🔗 Links
 
-- **Live Demo**: [Under Development]
-- **Documentation**: [Project Wiki](https://github.com/yourusername/pet-adoption-platform/wiki)
-- **Issues**: [GitHub Issues](https://github.com/yourusername/pet-adoption-platform/issues)
+
 
 ---
 
