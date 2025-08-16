@@ -71,7 +71,7 @@ const Footer = () => {
               </div>
               <div className="flex items-center space-x-2 text-muted-foreground">
                 <Phone className="h-4 w-4 text-warm-orange" />
-                <span>+91 9110271XXX</span>
+                <span>+91 9999999999</span>
               </div>
               <div className="flex items-center space-x-2 text-muted-foreground">
                 <MapPin className="h-4 w-4 text-warm-orange" />
@@ -84,7 +84,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-white/20 text-center">
           <p className="text-muted-foreground">
-            © 2024 PawPledge India. Made with ❤️ for animals in need.
+            © 2024 Loomio. Made with ❤️ for animals in need.
           </p>
         </div>
       </div>
