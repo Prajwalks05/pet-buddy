@@ -10,7 +10,7 @@ const Footer = () => {
           <div className="space-y-4">
             <Link to="/" className="flex items-center space-x-2">
               <Heart className="h-8 w-8 text-warm-orange" />
-              <span className="font-bold text-xl gradient-text">PawPledge India</span>
+              <span className="font-bold text-xl gradient-text">Loomio</span>
             </Link>
             <p className="text-muted-foreground">
               Connecting loving families with animals in need across India. 
@@ -67,15 +67,15 @@ const Footer = () => {
             <div className="space-y-2">
               <div className="flex items-center space-x-2 text-muted-foreground">
                 <Mail className="h-4 w-4 text-warm-orange" />
-                <span>support@pawpledgeindia.com</span>
+                <span>support@loomio.com</span>
               </div>
               <div className="flex items-center space-x-2 text-muted-foreground">
                 <Phone className="h-4 w-4 text-warm-orange" />
-                <span>+91 98765 43210</span>
+                <span>+91 9110271XXX</span>
               </div>
               <div className="flex items-center space-x-2 text-muted-foreground">
                 <MapPin className="h-4 w-4 text-warm-orange" />
-                <span>Mumbai, Maharashtra, India</span>
+                <span>Bengaluru ,Karnataka ,India</span>
               </div>
             </div>
           </div>

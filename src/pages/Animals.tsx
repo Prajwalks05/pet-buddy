@@ -1,8 +1,167 @@
+import { useState, useEffect } from "react";
 import Navigation from "@/components/Navigation";
-import Footer from "@/components/Footer";
 import AnimalCard from "@/components/AnimalCard";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Loader2, Filter, Search, AlertCircle } from "lucide-react";
+import { animalService } from "@/backend/services/animalService";
+import { shelterService } from "@/backend/services/shelterService";
+import { Animal, Shelter } from "@/backend/types/database";
+
+// Extended Animal type with shelter info
+interface AnimalWithShelter extends Animal {
+  shelter?: Shelter;
+}
 
 const Animals = () => {
+  const [allAnimals, setAllAnimals] = useState<AnimalWithShelter[]>([]);
+  const [filteredAnimals, setFilteredAnimals] = useState<AnimalWithShelter[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Filter state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [genderFilter, setGenderFilter] = useState("");
+  const [vaccinatedFilter, setVaccinatedFilter] = useState("");
+  const [ageFilter, setAgeFilter] = useState("");
+
+  useEffect(() => {
+    loadAllAnimals();
+  }, []);
+
+  useEffect(() => {
+    applyFilters();
+  }, [allAnimals, searchQuery, genderFilter, vaccinatedFilter, ageFilter]);
+
+  const loadAllAnimals = async () => {
+    try {
+      console.log("🐾 Loading animals from database...");
+      const { animals, error: animalsError } = await animalService.getAllAnimals();
+
+      if (animalsError) {
+        console.error("❌ Error loading animals:", animalsError);
+        setError(animalsError);
+        return;
+      }
+
+      console.log("✅ Loaded animals:", animals.length, "animals found");
+      console.log("📋 Animals data:", animals);
+
+      // Load shelter information for each animal
+      const animalsWithShelters = await Promise.all(
+        animals.map(async (animal) => {
+          console.log(`🏠 Loading shelter for ${animal.name} (shelter_id: ${animal.shelter_id})`);
+          const { shelter } = await shelterService.getShelterById(animal.shelter_id);
+          console.log(`🏠 Shelter loaded for ${animal.name}:`, shelter?.name || "Unknown");
+          return {
+            ...animal,
+            shelter: shelter || {
+              id: "unknown",
+              name: "Unknown Shelter",
+              location: "Unknown Location",
+              contact: ""
+            }
+          };
+        })
+      );
+
+      console.log("🎯 Final animals with shelters:", animalsWithShelters);
+      setAllAnimals(animalsWithShelters);
+    } catch (error) {
+      console.error("💥 Exception in loadAllAnimals:", error);
+      setError("Failed to load animals");
+    } finally {
+      console.log("🏁 Loading complete, setting loading to false");
+      setLoading(false);
+    }
+  };
+
+  const applyFilters = () => {
+    let filtered = [...allAnimals];
+
+    // Search filter
+    if (searchQuery.trim()) {
+      filtered = filtered.filter(animal =>
+        animal.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        animal.breed?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        animal.color?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Gender filter
+    if (genderFilter && genderFilter !== "all") {
+      filtered = filtered.filter(animal => animal.gender === genderFilter);
+    }
+
+    // Vaccinated filter
+    if (vaccinatedFilter && vaccinatedFilter !== "all") {
+      const isVaccinated = vaccinatedFilter === "true";
+      filtered = filtered.filter(animal => animal.vaccinated === isVaccinated);
+    }
+
+    // Age filter
+    if (ageFilter && ageFilter !== "all") {
+      filtered = filtered.filter(animal => {
+        if (!animal.age) return false;
+        switch (ageFilter) {
+          case "young": return animal.age <= 2;
+          case "adult": return animal.age > 2 && animal.age <= 7;
+          case "senior": return animal.age > 7;
+          default: return true;
+        }
+      });
+    }
+
+    setFilteredAnimals(filtered);
+  };
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setGenderFilter("all");
+    setVaccinatedFilter("all");
+    setAgeFilter("all");
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen">
+        <Navigation />
+        <main className="pt-24 pb-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+            <p>Loading animals...</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen">
+        <Navigation />
+        <main className="pt-24 pb-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+            <h1 className="text-3xl font-bold mb-4">Error Loading Animals</h1>
+            <p className="text-muted-foreground mb-4">{error}</p>
+            <Button onClick={loadAllAnimals}>Try Again</Button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen">
       <Navigation />
@@ -13,118 +172,134 @@ const Animals = () => {
               Find Your Perfect <span className="gradient-text">Companion</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Browse through our collection of adorable animals waiting for their forever homes.
+              Browse through our loving animals waiting for their forever homes.
             </p>
           </div>
           
           {/* Filters Section */}
-          <div className="card-animal p-6 mb-8">
-            <h3 className="text-lg font-semibold mb-4">Filter Animals</h3>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <select className="px-3 py-2 border rounded-md">
-                <option>All Breeds</option>
-                <option>Golden Retriever</option>
-                <option>Persian Cat</option>
-                <option>Labrador</option>
-              </select>
-              <select className="px-3 py-2 border rounded-md">
-                <option>All Genders</option>
-                <option>Male</option>
-                <option>Female</option>
-              </select>
-              <select className="px-3 py-2 border rounded-md">
-                <option>All Ages</option>
-                <option>0-1 years</option>
-                <option>1-3 years</option>
-                <option>3+ years</option>
-              </select>
-              <select className="px-3 py-2 border rounded-md">
-                <option>All Locations</option>
-                <option>Mumbai</option>
-                <option>Delhi</option>
-                <option>Bangalore</option>
-              </select>
-            </div>
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Filter className="h-5 w-5" />
+                <span>Filter Animals</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="search">Search</Label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="search"
+                      placeholder="Name, breed, color..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="gender">Gender</Label>
+                  <Select value={genderFilter} onValueChange={setGenderFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Any gender" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Any gender</SelectItem>
+                      <SelectItem value="Male">Male</SelectItem>
+                      <SelectItem value="Female">Female</SelectItem>
+                      <SelectItem value="Unknown">Unknown</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="vaccinated">Vaccination</Label>
+                  <Select value={vaccinatedFilter} onValueChange={setVaccinatedFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Any status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Any status</SelectItem>
+                      <SelectItem value="true">Vaccinated</SelectItem>
+                      <SelectItem value="false">Not vaccinated</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="age">Age Group</Label>
+                  <Select value={ageFilter} onValueChange={setAgeFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Any age" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Any age</SelectItem>
+                      <SelectItem value="young">Young (0-2 years)</SelectItem>
+                      <SelectItem value="adult">Adult (3-7 years)</SelectItem>
+                      <SelectItem value="senior">Senior (8+ years)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-end">
+                  <Button 
+                    variant="outline" 
+                    onClick={clearFilters}
+                    className="w-full"
+                  >
+                    Clear Filters
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Results */}
+          <div className="mb-6">
+            <p className="text-muted-foreground">
+              Showing {filteredAnimals.length} of {allAnimals.length} animals
+            </p>
           </div>
 
           {/* Animals Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <AnimalCard
-              id="1"
-              name="Buddy"
-              breed="Golden Retriever"
-              gender="Male"
-              age={3}
-              color="Golden"
-              vaccinated={true}
-              shelter="Happy Paws Shelter"
-              location="Mumbai"
-              imageUrl="https://images.unsplash.com/photo-1552053831-71594a27632d?w=400&h=300&fit=crop"
-            />
-            <AnimalCard
-              id="2"
-              name="Luna"
-              breed="Persian Cat"
-              gender="Female"
-              age={2}
-              color="White"
-              vaccinated={true}
-              shelter="Feline Friends"
-              location="Delhi"
-              imageUrl="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400&h=300&fit=crop"
-            />
-            <AnimalCard
-              id="3"
-              name="Max"
-              breed="Labrador"
-              gender="Male"
-              age={4}
-              color="Black"
-              vaccinated={false}
-              shelter="Pet Paradise"
-              location="Bangalore"
-              imageUrl="https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=400&h=300&fit=crop"
-            />
-            <AnimalCard
-              id="4"
-              name="Bella"
-              breed="Indian Pariah"
-              gender="Female"
-              age={1}
-              color="Brown"
-              vaccinated={true}
-              shelter="Stray Care Mumbai"
-              location="Mumbai"
-              imageUrl="https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400&h=300&fit=crop"
-            />
-            <AnimalCard
-              id="5"
-              name="Rocky"
-              breed="German Shepherd"
-              gender="Male"
-              age={5}
-              color="Brown & Black"
-              vaccinated={true}
-              shelter="Canine Care Delhi"
-              location="Delhi"
-              imageUrl="https://images.unsplash.com/photo-1589941013453-ec89f33b5e95?w=400&h=300&fit=crop"
-            />
-            <AnimalCard
-              id="6"
-              name="Mittens"
-              breed="Siamese Cat"
-              gender="Female"
-              age={3}
-              color="Cream"
-              vaccinated={true}
-              shelter="Cat Haven"
-              location="Bangalore"
-              imageUrl="https://images.unsplash.com/photo-1574158622682-e40e69881006?w=400&h=300&fit=crop"
-            />
-          </div>
+          {filteredAnimals.length === 0 ? (
+            <div className="text-center py-12">
+              <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-xl font-semibold mb-2">No animals found</h3>
+              <p className="text-muted-foreground mb-4">
+                {allAnimals.length === 0 
+                  ? "No animals are currently available for adoption."
+                  : "Try adjusting your filters to see more results."
+                }
+              </p>
+              {allAnimals.length > 0 && (
+                <Button onClick={clearFilters}>Clear All Filters</Button>
+              )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredAnimals.map((animal) => (
+                <AnimalCard
+                  key={animal.id}
+                  id={animal.id}
+                  name={animal.name}
+                  breed={animal.breed || "Mixed breed"}
+                  gender={animal.gender || "Unknown"}
+                  age={animal.age || 0}
+                  color={animal.color || "Unknown"}
+                  vaccinated={animal.vaccinated || false}
+                  shelter={animal.shelter?.name || "Unknown Shelter"}
+                  location={animal.shelter?.location || "Unknown Location"}
+                  imageUrl={animal.pictures?.[0]?.image_url || "/placeholder-animal.jpg"}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </main>
-      <Footer />
     </div>
   );
 };
