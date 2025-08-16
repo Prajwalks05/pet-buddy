@@ -36,10 +36,10 @@ const About = () => {
         <section className="py-20 px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-4xl sm:text-5xl font-bold mb-6">
-              About <span className="gradient-text">PawPledge India</span>
+              About <span className="gradient-text">Loomio</span>
             </h1>
             <p className="text-xl text-muted-foreground leading-relaxed">
-              PawPledge India was born from a simple belief: every animal deserves a loving home, 
+              Loomio was born from a simple belief: every animal deserves a loving home, 
               and every family deserves the joy of a loyal companion. We're India's first 
               comprehensive platform dedicated to making animal adoption accessible, 
               transparent, and meaningful.
@@ -121,7 +121,7 @@ const About = () => {
             <h2 className="text-3xl font-bold mb-6">Join Our Mission</h2>
             <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
               Whether you're looking to adopt, volunteer, or partner with us, there are many ways 
-              to be part of the PawPledge India family. Together, we can give every animal the 
+              to be part of the Loomio family. Together, we can give every animal the 
               loving home they deserve.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
