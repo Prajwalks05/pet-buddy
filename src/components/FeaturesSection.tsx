@@ -47,7 +47,7 @@ const FeaturesSection = () => {
         {/* Section Header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl sm:text-5xl font-bold mb-6">
-            Why Choose <span className="gradient-text">PawPledge India</span>?
+            Why Choose <span className="gradient-text">Loomio</span>?
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             We've made animal adoption simple, safe, and meaningful for families across India.
